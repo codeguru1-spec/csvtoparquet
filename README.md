@@ -108,8 +108,8 @@ public class CsvToParquetConverter {
     public static void main(String[] args) throws IOException {
         // Set input and output folder paths
         System.setProperty("hadoop.home.dir", "C:\\hadoop");
-        String inputFolderPath = "C:\\Users\\sumit\\IdeaProjects\\CsvToParquetConverterJava\\src\\main\\resources\\input";
-        String outputFolderPath = "C:\\Users\\sumit\\IdeaProjects\\CsvToParquetConverterJava\\src\\main\\resources\\output";
+        String inputFolderPath = "\\input";
+        String outputFolderPath = "\\resources\\output";
 
         // Convert all CSV files in the input folder
         convertAllCsvFilesInFolder(inputFolderPath, outputFolderPath);
