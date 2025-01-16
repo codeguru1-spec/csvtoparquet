@@ -16,8 +16,10 @@ import org.apache.parquet.hadoop.metadata.CompressionCodecName;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.File;
+import java.util.HashMap;
 import java.util.List;
-
+import java.util.Map;
+ 
 public class CsvToParquetConverter {
 
     public static void convertCsvToParquet(String csvFilePath, String parquetFilePath) throws IOException {
@@ -29,8 +31,9 @@ public class CsvToParquetConverter {
             System.out.println("Converting file: " + csvFilePath);
             System.out.println("Headers: " + headers);
 
-            // Generate Avro schema from CSV headers
-            Schema schema = generateAvroSchema(headers);
+            // Generate Avro schema from CSV headers and get header mapping
+            Map<String, String> headerMap = new HashMap<>();
+            Schema schema = generateAvroSchema(headers, headerMap);
 
             // Create Avro Parquet writer
             Path path = new Path(parquetFilePath);
@@ -52,7 +55,9 @@ public class CsvToParquetConverter {
                 for (CSVRecord record : csvParser) {
                     GenericRecord avroRecord = new GenericData.Record(schema);
                     for (String header : headers) {
-                        avroRecord.put(header, record.get(header));
+                        // Use the sanitized header to put data into the Avro record
+                        String sanitizedHeader = headerMap.get(header);
+                        avroRecord.put(sanitizedHeader, record.get(header));
                     }
                     writer.write(avroRecord);
                 }
@@ -62,11 +67,14 @@ public class CsvToParquetConverter {
         }
     }
 
-    private static Schema generateAvroSchema(List<String> headers) {
-        // Build Avro schema based on CSV headers
+    private static Schema generateAvroSchema(List<String> headers, Map<String, String> headerMap) {
+        // Build Avro schema based on sanitized CSV headers
         SchemaBuilder.FieldAssembler<Schema> builder = SchemaBuilder.record("CsvRecord").fields();
         for (String header : headers) {
-            builder = builder.optionalString(header);
+            // Sanitize the header by replacing spaces with underscores
+            String sanitizedHeader = header.replaceAll("\\s+", "_");
+            headerMap.put(header, sanitizedHeader);
+            builder = builder.optionalString(sanitizedHeader);
         }
         return builder.endRecord();
     }
@@ -108,8 +116,8 @@ public class CsvToParquetConverter {
     public static void main(String[] args) throws IOException {
         // Set input and output folder paths
         System.setProperty("hadoop.home.dir", "C:\\hadoop");
-        String inputFolderPath = "\\input";
-        String outputFolderPath = "\\resources\\output";
+        String inputFolderPath = "C:\\Users\\sumit\\IdeaProjects\\CsvToParquetConverterJava\\src\\main\\resources\\input";
+        String outputFolderPath = "C:\\Users\\sumit\\IdeaProjects\\CsvToParquetConverterJava\\src\\main\\resources\\output";
 
         // Convert all CSV files in the input folder
         convertAllCsvFilesInFolder(inputFolderPath, outputFolderPath);
